@@ -75,3 +75,35 @@ jobs:
         with:
           name: snyk-report
           path: snyk_report.json
+
+  image_scan:
+    name: Build Image and Run Image Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1 
+
+      - name: Setup Docker
+        uses: docker-practice/actions-setup-docker@v1
+        with:
+          docker-version: '20.10.24'
+
+      - name: Build Docker Image
+        run: |
+          docker build -f Dockerfile -t myapp:latest .
+        
+      #- name: Docker Scout Scan
+      #  run: |
+      #    curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s --
+      #    
+      #    echo ${{ secrets.REPO_PWD }} | docker login -u ${{ secrets.REPO_USER }} --password-stdin
+      #    
+      #    docker scout quickview
+      #    docker scout cves
+
+      - name: Docker Scout Scan
+        uses: docker/scout-action@v1
+        with:
+          dockerhub-user: ${{ secrets.REPO_USER }}
+          dockerhub-password: ${{ secrets.REPO_PWD }}
+          command: quickview, cves
