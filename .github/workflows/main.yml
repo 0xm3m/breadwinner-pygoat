@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Run Snyk Code Scan
-        uses: snyk/actions/python-3.8@master
+        uses: snyk/actions/python-3.12@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
