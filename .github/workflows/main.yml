@@ -96,6 +96,7 @@ jobs:
 
       - name: Start and Run ZAP in Docker
         run: |
+          chmod 777 $(pwd)
           docker run --rm -v $(pwd):/zap/wrk/:rw -t  ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -r zap_report.html
 
       - name: Upload ZAP Report
