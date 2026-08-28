@@ -87,11 +87,16 @@ jobs:
         run: |
           echo ${{ secrets.REPO_PWD }} | docker login -u ${{ secrets.REPO_USER }} --password-stdin
           docker pull pygoat/pygoat:latest
-          docker run --rm -p 8000:8000 pygoat/pygoat:latest
+          docker run -d --rm -p 8000:8000 --name pygoat pygoat/pygoat:latest
+          # wait for the app to actually be ready instead of a blind sleep
+          for i in {1..30}; do
+            curl -sf http://localhost:8000 > /dev/null && break
+            sleep 2
+          done
 
       - name: Start and Run ZAP in Docker
         run: |
-          docker run --rm -v $(pwd):/zap/wrk/:rw -t  ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8000 -r zap_report.html
+          docker run --rm -v $(pwd):/zap/wrk/:rw -t  ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -r zap_report.html
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v7.0.1
