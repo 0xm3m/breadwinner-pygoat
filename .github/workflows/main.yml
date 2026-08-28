@@ -97,7 +97,7 @@ jobs:
       - name: Start and Run ZAP in Docker
         run: |
           chmod 777 $(pwd)
-          docker run --rm -v $(pwd):/zap/wrk/:rw -t  ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -r zap_report.html
+          docker run --rm -v $(pwd)/zap-output:/zap/wrk/:rw --add-host=host.docker.internal:host-gateway -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8000 -r zap_report.html
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v7.0.1
