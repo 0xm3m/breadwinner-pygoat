@@ -76,21 +76,26 @@ jobs:
           name: snyk-report
           path: snyk_report.json
 
-  image_scan:
-    name: Build Image and Run Image Scan
+  zap_dast_scan:
+    name: Run ZAP DAST Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
 
-      - name: Build Docker Image
+      - name: Start Web Application in Docker
         run: |
-          docker build -f Dockerfile -t myapp:latest .
+          echo ${{ secrets.REPO_PWD }} | docker login -u ${{ secrets.REPO_USER }} --password-stdin
+          docker pull pygoat/pygoat:latest
+          docker run --rm -p 8000:8000 pygoat/pygoat:latest
 
-      - name: Docker Scout Scan
-        uses: docker/scout-action@v1
+      - name: Start and Run ZAP in Docker
+        run: |
+          docker run --rm -v $(pwd):/zap/wrk/:rw -t  ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8000 -r zap_report.html
+
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v7.0.1
+        if: always()
         with:
-          dockerhub-user: ${{ secrets.REPO_USER }}
-          dockerhub-password: ${{ secrets.REPO_PWD }}
-          command: quickview,cves
-          image: myapp:latest
+          name: zap-report
+          path: zap_report.html
